@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   BookOpen,
   GraduationCap,
@@ -18,8 +19,155 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-export default function StudentDashboard() { 
-return (
+export default function StudentDashboard() {
+  const router = useRouter();
+  const [student, setStudent] = useState<{
+    name?: string;
+    email?: string;
+    course?: string;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadStudentProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const savedUser = localStorage.getItem("user");
+
+        if (!token) {
+          router.replace("/student-login");
+          return;
+        }
+
+        const response = await axios.get(
+          "http://localhost:5000/api/auth/profile",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response?.data?.user) {
+          setStudent(response.data.user);
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+        } else if (savedUser) {
+          setStudent(JSON.parse(savedUser));
+        } else {
+          throw new Error("No user data returned");
+        }
+      } catch (error) {
+        console.error("Failed to load student profile", error);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        router.replace("/student-login");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStudentProfile();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#eef4ff] via-[#e7f0ff] to-[#f3e8ff] text-slate-700">
+        <div className="rounded-3xl border border-white/70 bg-white/80 p-8 shadow-xl backdrop-blur-xl text-center">
+          <p className="text-lg font-semibold">Checking your session...</p>
+          <p className="text-sm text-slate-500 mt-2">You will be redirected if you are not logged in.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const firstName = student?.name?.split(" ")[0] || "Student";
+  const greeting = new Date().getHours() < 12 ? "Good morning" : "Good evening";
+
+  const courseList = [
+    {
+      name: student?.course || "Full Stack Development",
+      progress: 68,
+      nextLesson: "React components",
+    },
+    {
+      name: "Data Analytics",
+      progress: 42,
+      nextLesson: "SQL reporting",
+    },
+    {
+      name: "Python Programming",
+      progress: 84,
+      nextLesson: "APIs & automation",
+    },
+  ];
+
+  const averageProgress = Math.round(
+    courseList.reduce((sum, item) => sum + item.progress, 0) / courseList.length
+  );
+
+  const stats = [
+    {
+      title: "Active Courses",
+      value: String(courseList.length),
+      icon: BookOpen,
+      color: "from-blue-500 to-cyan-500",
+      change: "+1 this month",
+    },
+    {
+      title: "Progress",
+      value: `${averageProgress}%`,
+      icon: GraduationCap,
+      color: "from-purple-500 to-pink-500",
+      change: "+5% this week",
+    },
+    {
+      title: "Attendance",
+      value: "92%",
+      icon: Calendar,
+      color: "from-green-500 to-emerald-500",
+      change: "On track",
+    },
+    {
+      title: "Placement Status",
+      value: student?.course ? "Active" : "Ready",
+      icon: Briefcase,
+      color: "from-orange-500 to-red-500",
+      change: "3 interviews this month",
+    },
+  ];
+
+  const assignments = [
+    { title: "Java Assignment", status: "Due tomorrow" },
+    { title: "React Project", status: "In review" },
+    { title: "Python Quiz", status: "Completed" },
+    { title: "DBMS Case Study", status: "Upcoming" },
+  ];
+
+  const upcomingClasses = [
+    { title: "React.js", time: "Tomorrow 10 AM" },
+    { title: "Python Advanced", time: "Tomorrow 2 PM" },
+    { title: "DSA Session", time: "Friday 11 AM" },
+  ];
+
+  const certificates = [
+    { name: "Full Stack Development", badge: "Verified" },
+    { name: "Internship Completion", badge: "Issued" },
+  ];
+
+  const announcements = [
+    { text: "New React Module Added", tone: "bg-blue-50" },
+    { text: "Placement Drive on 10 June", tone: "bg-purple-50" },
+    { text: "Assignment Deadline Extended", tone: "bg-cyan-50" },
+  ];
+
+  const timeline = [
+    { text: "Completed React Module", color: "bg-green-500" },
+    { text: "Submitted Python Assignment", color: "bg-blue-500" },
+    { text: "Applied for Internship", color: "bg-purple-500" },
+    { text: "Updated Resume", color: "bg-orange-500" },
+  ];
+
+  return (
 <div className="min-h-screen bg-gradient-to-br from-[#eef4ff] via-[#e7f0ff] to-[#f3e8ff]">
 
   <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -48,44 +196,49 @@ return (
           {
             icon: Home,
             label: "Dashboard",
+            path: "/student-dashboard",
           },
           {
             icon: BookOpen,
             label: "Courses",
+            path: "/courses",
           },
           {
             icon: GraduationCap,
             label: "Assignments",
+            path: "/assignments",
           },
           {
             icon: Trophy,
             label: "Placements",
+            path: "/placements",
           },
           {
             icon: Award,
             label: "Certificates",
+            path: "/certificates",
           },
           {
             icon: User,
             label: "Profile",
+            path: "/profile",
           },
           {
             icon: Settings,
             label: "Settings",
+            path: "/settings",
           },
         ].map((item) => (
-          <motion.div
+          <Link
             key={item.label}
-            whileHover={{
-              x: 8,
-            }}
+            href={item.path}
             className="flex items-center gap-4 p-4 rounded-2xl hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 hover:text-white transition-all cursor-pointer"
           >
             <item.icon size={20} />
             <span className="font-medium">
               {item.label}
             </span>
-          </motion.div>
+          </Link>
         ))}
 
       </nav>
@@ -134,15 +287,16 @@ return (
           </span>
 
           <h1 className="text-6xl font-black mt-6 leading-tight">
-            Welcome Back
+            {greeting}, {firstName}!
           </h1>
 
           <p className="text-xl text-blue-100 mt-4 max-w-2xl">
-            Continue your learning journey and track your
-            career growth with InCrafto.
+            {student?.email
+              ? `Welcome back, ${student.name || firstName}. Your profile is synced from your latest login and your learning progress is ready to review.`
+              : "Continue your learning journey and track your career growth with InCrafto."}
           </p>
 
-          <div className="flex gap-4 mt-8">
+          <div className="flex flex-wrap gap-4 mt-8">
 
             <Link
               href="/courses"
@@ -151,8 +305,22 @@ return (
               Continue Learning
             </Link>
 
-            <button className="border border-white/30 px-7 py-4 rounded-2xl">
+            <Link
+              href="/placements"
+              className="border border-white/30 px-7 py-4 rounded-2xl"
+            >
               View Placements
+            </Link>
+
+            <button
+              onClick={() => {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                router.replace("/student-login");
+              }}
+              className="rounded-2xl bg-red-500 px-7 py-4 font-semibold text-white hover:bg-red-600 transition"
+            >
+              Logout
             </button>
 
           </div>
@@ -163,32 +331,7 @@ return (
 
             <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
 
-        {[
-          {
-            title: "Active Courses",
-            value: "03",
-            icon: BookOpen,
-            color: "from-blue-500 to-cyan-500",
-          },
-          {
-            title: "Progress",
-            value: "68%",
-            icon: GraduationCap,
-            color: "from-purple-500 to-pink-500",
-          },
-          {
-            title: "Attendance",
-            value: "92%",
-            icon: Calendar,
-            color: "from-green-500 to-emerald-500",
-          },
-          {
-            title: "Placement Status",
-            value: "Active",
-            icon: Briefcase,
-            color: "from-orange-500 to-red-500",
-          },
-        ].map((item, index) => (
+        {stats.map((item, index) => (
           <motion.div
             key={item.title}
             initial={{ opacity: 0, y: 30 }}
@@ -217,7 +360,7 @@ return (
             </p>
 
             <p className="text-green-500 text-sm mt-2">
-              ↑ 12% this month
+              {item.change}
             </p>
           </motion.div>
         ))}
@@ -250,20 +393,7 @@ return (
 
           <div className="space-y-6">
 
-            {[
-              {
-                name: "Full Stack Development",
-                progress: 68,
-              },
-              {
-                name: "Data Analytics",
-                progress: 42,
-              },
-              {
-                name: "Python Programming",
-                progress: 84,
-              },
-            ].map((course) => (
+            {courseList.map((course) => (
               <motion.div
                 key={course.name}
                 whileHover={{
@@ -280,8 +410,11 @@ return (
                   <span className="font-bold text-blue-600">
                     {course.progress}%
                   </span>
-
                 </div>
+
+                <p className="text-sm text-slate-500 mb-3">
+                  Next lesson: {course.nextLesson}
+                </p>
 
                 <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
 
@@ -387,12 +520,12 @@ return (
               <div className="absolute inset-0 flex flex-col items-center justify-center">
 
                 <h3 className="text-6xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  68%
+                  {averageProgress}%
                 </h3>
 
                 <p className="text-gray-500">
                   Completed
-                </p>
+                </p>localllocal
 
               </div>
 
@@ -416,17 +549,15 @@ return (
 
           <div className="space-y-4">
 
-            {[
-              "Java Assignment",
-              "React Project",
-              "Python Quiz",
-              "DBMS Case Study",
-            ].map((item) => (
+            {assignments.map((item) => (
               <div
-                key={item}
+                key={item.title}
                 className="p-5 rounded-2xl bg-gradient-to-r from-blue-50 to-purple-50 hover:shadow-lg transition-all"
               >
-                {item}
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-semibold text-slate-800">{item.title}</span>
+                  <span className="text-xs rounded-full bg-white/80 px-3 py-1 text-blue-700">{item.status}</span>
+                </div>
               </div>
             ))}
 
@@ -443,16 +574,15 @@ return (
 
           <div className="space-y-4">
 
-            {[
-              "React.js - Tomorrow 10 AM",
-              "Python Advanced - Tomorrow 2 PM",
-              "DSA Session - Friday 11 AM",
-            ].map((item) => (
+            {upcomingClasses.map((item) => (
               <div
-                key={item}
+                key={item.title}
                 className="p-5 rounded-2xl bg-gradient-to-r from-cyan-50 to-blue-50"
               >
-                {item}
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-semibold text-slate-800">{item.title}</span>
+                  <span className="text-xs rounded-full bg-white/80 px-3 py-1 text-cyan-700">{item.time}</span>
+                </div>
               </div>
             ))}
 
@@ -529,13 +659,12 @@ return (
 
           <div className="space-y-4">
 
-            <div className="p-4 rounded-2xl bg-purple-50">
-              ✔ Full Stack Development
-            </div>
-
-            <div className="p-4 rounded-2xl bg-purple-50">
-              ✔ Internship Completion
-            </div>
+            {certificates.map((item) => (
+              <div key={item.name} className="p-4 rounded-2xl bg-purple-50 flex items-center justify-between gap-3">
+                <span>✔ {item.name}</span>
+                <span className="text-xs rounded-full bg-white px-3 py-1 text-purple-700">{item.badge}</span>
+              </div>
+            ))}
 
           </div>
         </motion.div>
@@ -555,17 +684,11 @@ return (
 
           <div className="space-y-4">
 
-            <div className="p-4 rounded-2xl bg-blue-50">
-              📢 New React Module Added
-            </div>
-
-            <div className="p-4 rounded-2xl bg-blue-50">
-              📢 Placement Drive on 10 June
-            </div>
-
-            <div className="p-4 rounded-2xl bg-blue-50">
-              📢 Assignment Deadline Extended
-            </div>
+            {announcements.map((item) => (
+              <div key={item.text} className={`p-4 rounded-2xl ${item.tone}`}>
+                📢 {item.text}
+              </div>
+            ))}
 
           </div>
         </motion.div>
@@ -580,25 +703,12 @@ return (
 
           <div className="space-y-5">
 
-            <div className="flex gap-3">
-              <div className="w-3 h-3 rounded-full bg-green-500 mt-2" />
-              <p>Completed React Module</p>
-            </div>
-
-            <div className="flex gap-3">
-              <div className="w-3 h-3 rounded-full bg-blue-500 mt-2" />
-              <p>Submitted Python Assignment</p>
-            </div>
-
-            <div className="flex gap-3">
-              <div className="w-3 h-3 rounded-full bg-purple-500 mt-2" />
-              <p>Applied for Internship</p>
-            </div>
-
-            <div className="flex gap-3">
-              <div className="w-3 h-3 rounded-full bg-orange-500 mt-2" />
-              <p>Updated Resume</p>
-            </div>
+            {timeline.map((item) => (
+              <div key={item.text} className="flex gap-3">
+                <div className={`w-3 h-3 rounded-full ${item.color} mt-2`} />
+                <p>{item.text}</p>
+              </div>
+            ))}
 
           </div>
         </motion.div>
