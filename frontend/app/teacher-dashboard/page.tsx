@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard,
@@ -7,6 +7,7 @@ import {
   Calendar,
   BookOpen,
   Bell,
+  Search,
   FileText,
   Settings,
   GraduationCap,
@@ -71,26 +72,30 @@ export default function TeacherDashboard() {
       <nav className="flex-1 px-5 space-y-2">
 
         {[
-          {
-            icon: Home,
-            label: "Dashboard",
-          },
-          {
-            icon: BookOpen,
-            label: "My Classes",
-          },
+        {
+  icon: Home,
+  label: "Dashboard",
+  href: "/teacher-dashboard",
+},
+{
+  icon: BookOpen,
+  label: "My Classes",
+  href: "/teacher-dashboard/classes",
+},
           {
             icon: Users,
             label: "Students",
           },
-          {
-            icon: ClipboardCheck,
-            label: "Attendance",
-          },
-          {
-            icon: FileText,
-            label: "Assignments",
-          },
+         {
+  icon: ClipboardCheck,
+  label: "Attendance",
+  href: "/teacher-dashboard/attendance",
+},
+         {
+  icon: FileText,
+  label: "Assignments",
+  href: "/teacher-dashboard/assignments",
+},
           {
             icon: Video,
             label: "Content Library",
@@ -115,26 +120,53 @@ export default function TeacherDashboard() {
             icon: Settings,
             label: "Settings",
           },
-        ].map((item, index) => (
-          <motion.div
-            key={item.label}
-            whileHover={{
-              x: 8,
-            }}
-            className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all ${
-              index === 0
-                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-xl"
-                : "hover:bg-white"
-            }`}
-          >
-            <item.icon size={20} />
+       ].map((item, index) => (
+  <Link
+    key={item.label}
+  href={
+  item.label === "My Classes"
+    ? "/teacher-dashboard/classes"
+    : item.label === "Students"
+    ? "/teacher-dashboard/classes/1/students"
+    : item.label === "Attendance"
+    ? "/teacher-dashboard/attendance"
+    : item.label === "Assignments"
 
-            <span className="font-medium">
-              {item.label}
-            </span>
+    ? "/teacher-dashboard/assignments"
+    : item.label === "Content Library"
+    ? "/teacher-dashboard/content"
+    : item.label === "Announcements"
+    ? "/teacher-dashboard/announcements"
+    : item.label === "Schedule"
+    ? "/teacher-dashboard/schedule"
+    : item.label === "Certificates"
+    ? "/teacher-dashboard/certificates"
+    : item.label === "Placements"
+    ? "/teacher-dashboard/placements"
+    : item.label === "Settings"
+    ? "/teacher-dashboard/settings"
+    : "#"
+}
+  >
+    <motion.div
+      whileHover={{
+        x: 8,
+      }}
+      className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all ${
+        index === 0
+          ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-xl"
+          : "hover:bg-white"
+      }`}
+    >
+      <item.icon size={20} />
 
-          </motion.div>
-        ))}
+      <span className="font-medium">
+        {item.label}
+      </span>
+
+    </motion.div>
+  </Link>
+))}
 
       </nav>
 
@@ -157,6 +189,71 @@ export default function TeacherDashboard() {
     </aside>
 
     <main className="flex-1 p-8">
+
+      {/* Top Navbar */}
+
+<div className="bg-white/70 backdrop-blur-xl border border-white/50 rounded-3xl p-5 shadow-xl mb-8">
+
+  <div className="flex justify-between items-center">
+
+    {/* Search */}
+
+    <div className="flex items-center gap-3 bg-slate-100 px-4 py-3 rounded-2xl w-[400px]">
+
+      <Search size={20} />
+
+      <input
+        placeholder="Search students, classes, assignments..."
+        className="bg-transparent outline-none w-full"
+      />
+
+    </div>
+
+    {/* Right Side */}
+
+    <div className="flex items-center gap-4">
+
+      <button className="relative bg-white p-3 rounded-2xl shadow">
+
+        <Bell size={20} />
+
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-2 rounded-full">
+          5
+        </span>
+
+      </button>
+
+      <button className="bg-white p-3 rounded-2xl shadow">
+        🌙
+      </button>
+
+      <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl shadow">
+
+        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold">
+
+          RS
+
+        </div>
+
+        <div>
+
+          <p className="font-semibold">
+            Rahul Sharma
+          </p>
+
+          <p className="text-sm text-gray-500">
+            Senior Instructor
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
 
       <motion.div
         initial={{
@@ -767,6 +864,81 @@ export default function TeacherDashboard() {
         </div>
 
       </div>
+      <div className="grid lg:grid-cols-2 gap-8 mt-8">
+
+  {/* Performance Chart */}
+
+  <div className="bg-white/70 backdrop-blur-xl rounded-[32px] p-8 shadow-xl">
+
+    <h2 className="text-2xl font-bold mb-6">
+      Weekly Performance
+    </h2>
+
+    <div className="space-y-5">
+
+      {[
+        { day: "Mon", value: 75 },
+        { day: "Tue", value: 88 },
+        { day: "Wed", value: 92 },
+        { day: "Thu", value: 84 },
+        { day: "Fri", value: 96 },
+      ].map((item) => (
+
+        <div key={item.day}>
+
+          <div className="flex justify-between mb-2">
+            <span>{item.day}</span>
+            <span>{item.value}%</span>
+          </div>
+
+          <div className="w-full h-3 bg-gray-200 rounded-full">
+
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-blue-500 to-purple-500"
+              style={{ width: `${item.value}%` }}
+            />
+
+          </div>
+
+        </div>
+
+      ))}
+
+    </div>
+
+  </div>
+
+  {/* Recent Activity */}
+
+  <div className="bg-white/70 backdrop-blur-xl rounded-[32px] p-8 shadow-xl">
+
+    <h2 className="text-2xl font-bold mb-6">
+      Recent Activity
+    </h2>
+
+    <div className="space-y-4">
+
+      <div className="p-4 rounded-2xl bg-blue-50">
+        📚 React Assignment Submitted
+      </div>
+
+      <div className="p-4 rounded-2xl bg-green-50">
+        ✅ Attendance Marked for Full Stack Batch
+      </div>
+
+      <div className="p-4 rounded-2xl bg-purple-50">
+        🏆 Certificate Issued to 12 Students
+      </div>
+
+      <div className="p-4 rounded-2xl bg-orange-50">
+        💼 New Placement Drive Added
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
 
     </main>
 
