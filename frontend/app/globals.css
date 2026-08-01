@@ -58,25 +58,25 @@
 }
 
 .dark {
-  --background: #0F172A;
-  --foreground: #F8FAFC;
-  --card: #1E293B;
+  --background: #020817;
+  --foreground: #E5EEF9;
+  --card: #0F172A;
   --card-foreground: #F8FAFC;
-  --popover: #1E293B;
+  --popover: #0F172A;
   --popover-foreground: #F8FAFC;
-  --primary: #3B82F6;
-  --primary-foreground: #FFFFFF;
-  --secondary: #1E293B;
-  --secondary-foreground: #F8FAFC;
-  --muted: #1E293B;
+  --primary: #60A5FA;
+  --primary-foreground: #08111F;
+  --secondary: #172033;
+  --secondary-foreground: #E5EEF9;
+  --muted: #13203A;
   --muted-foreground: #94A3B8;
-  --accent: #06B6D4;
-  --accent-foreground: #FFFFFF;
+  --accent: #22D3EE;
+  --accent-foreground: #04131A;
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
-  --border: #334155;
-  --input: #334155;
-  --ring: #3B82F6;
+  --border: #24324A;
+  --input: #162235;
+  --ring: #60A5FA;
 }
 
 @theme inline {
@@ -118,7 +118,16 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image:
+      radial-gradient(circle at top left, rgba(96, 165, 250, 0.12), transparent 22%),
+      radial-gradient(circle at top right, rgba(34, 211, 238, 0.10), transparent 18%);
   }
+}
+
+.dark body {
+  background-image:
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.16), transparent 22%),
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 18%);
 }
 
 /* Smooth scrolling */
@@ -146,17 +155,77 @@ html {
 
 /* Glass effect utility */
 .glass {
-  background: rgba(255, 255, 255, 0.7);
+  background: color-mix(in srgb, var(--card) 82%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 }
 
 .glass-dark {
-  background: rgba(15, 23, 42, 0.8);
+  background: color-mix(in srgb, var(--card) 82%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.dark body {
+  background: var(--background);
+}
+
+.dark .bg-white,
+.dark .bg-white\/80,
+.dark .bg-white\/70,
+.dark .bg-white\/60,
+.dark .bg-slate-50,
+.dark .bg-slate-50\/80,
+.dark .bg-slate-100,
+.dark .bg-gray-50,
+.dark .border-white\/50,
+.dark .border-white\/60,
+.dark .border-slate-200,
+.dark .text-slate-600,
+.dark .text-slate-700,
+.dark .text-gray-500,
+.dark .text-gray-600,
+.dark .text-slate-400 {
+  color: var(--foreground) !important;
+}
+
+.dark .bg-white,
+.dark .bg-white\/80,
+.dark .bg-white\/70,
+.dark .bg-white\/60,
+.dark .bg-slate-50,
+.dark .bg-slate-50\/80,
+.dark .bg-slate-100,
+.dark .bg-gray-50 {
+  background-color: color-mix(in srgb, var(--card) 88%, transparent) !important;
+}
+
+.dark .border-white\/50,
+.dark .border-white\/60,
+.dark .border-slate-200 {
+  border-color: color-mix(in srgb, var(--border) 80%, transparent) !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-700,
+.dark .text-gray-500,
+.dark .text-gray-600,
+.dark .text-slate-400 {
+  color: var(--muted-foreground) !important;
+}
+
+.dark .bg-slate-100 {
+  background-color: var(--secondary) !important;
+}
+
+.dark .bg-slate-50 {
+  background-color: var(--secondary) !important;
+}
+
+.dark .bg-white {
+  background-color: var(--card) !important;
 }
 
 /* Gradient text */

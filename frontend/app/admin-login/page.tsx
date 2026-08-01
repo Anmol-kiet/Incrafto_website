@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
+import { getDashboardPathForRole, saveAuthSession } from "@/lib/auth";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -21,20 +22,20 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      // Send credentials to backend authentication port
-      const res = await axios.post("http://localhost:5000/api/admin/login", {
+      const res = await axios.post("http://localhost:5000/api/auth/login", {
         email,
         password,
       });
 
-      if (res.data.token) {
-        // Save token to localStorage for authenticated requests
-        localStorage.setItem("adminToken", res.data.token);
-        alert("Login Successful! ✅");
-        router.push("/admin-dashboard");
-      } else {
+      const { token, user } = res.data ?? {};
+
+      if (!token || !user?.role) {
         setError("Invalid server response. Please try again.");
+        return;
       }
+
+      saveAuthSession(token, user);
+      router.replace(getDashboardPathForRole(user.role));
     } catch (err: any) {
       console.error(err);
       setError(

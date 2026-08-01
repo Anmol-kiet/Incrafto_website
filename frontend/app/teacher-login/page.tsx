@@ -2,11 +2,55 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { getDashboardPathForRole, saveAuthSession } from "@/lib/auth";
 
 export default function TeacherLoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!email || !password) {
+      setError("Please fill all fields");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        {
+          email,
+          password,
+        }
+      );
+
+      const { token, user } = response.data ?? {};
+
+      if (!token || !user?.role) {
+        throw new Error("Invalid server response");
+      }
+
+      saveAuthSession(token, user);
+      router.replace(getDashboardPathForRole(user.role));
+    } catch (error: any) {
+      console.error("LOGIN ERROR:", error);
+      setError(error?.response?.data?.message || "Login Failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
@@ -75,7 +119,12 @@ export default function TeacherLoginPage() {
               Login to access your teacher dashboard
             </p>
 
-            <form className="mt-8 space-y-5">
+            <form className="mt-8 space-y-5" onSubmit={handleLogin}>
+              {error && (
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                  {error}
+                </div>
+              )}
 
               <div>
                 <label className="mb-2 block text-sm text-slate-300">
@@ -84,6 +133,8 @@ export default function TeacherLoginPage() {
 
                 <input
                   type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
                   placeholder="Enter your teacher email"
                   className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:border-blue-500"
                 />
@@ -98,6 +149,8 @@ export default function TeacherLoginPage() {
 
                   <input
                     type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
                     placeholder="Enter password"
                     className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:border-blue-500"
                   />
@@ -126,12 +179,20 @@ export default function TeacherLoginPage() {
                 </Link>
               </div>
 
-              <Link
-                href="/teacher-dashboard"
-                className="block w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 py-3 font-semibold text-white text-center transition hover:scale-[1.02]"
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 py-3 font-semibold text-white transition hover:scale-[1.02] disabled:opacity-60"
               >
-                Login
-              </Link>
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Logging In...
+                  </span>
+                ) : (
+                  "Login"
+                )}
+              </button>
 
             </form>
 

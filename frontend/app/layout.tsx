@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { SmoothScrollProvider } from '@/components/providers/smooth-scroll-provider'
+import { ThemeProvider } from '@/components/theme-provider'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -45,11 +46,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="bg-background">
+    <html lang="en" suppressHydrationWarning className="bg-background">
       <body className={`${inter.variable} font-sans antialiased`}>
-        <SmoothScrollProvider>
-          {children}
-        </SmoothScrollProvider>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <SmoothScrollProvider>
+            {children}
+          </SmoothScrollProvider>
+        </ThemeProvider>
 
         {process.env.NODE_ENV === 'production' && (
           <Analytics />

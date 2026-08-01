@@ -2,30 +2,33 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { getDashboardPathForRole, saveAuthSession } from "@/lib/auth";
 
 export default function StudentLoginPage() {
   const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogin = async () => {
+  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!email || !password) {
+      setError("Please fill all fields");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
     try {
-      if (!email || !password) {
-        alert("Please fill all fields");
-        return;
-      }
-
-      setLoading(true);
-
       const response = await axios.post(
         "http://localhost:5000/api/auth/login",
         {
@@ -34,29 +37,17 @@ export default function StudentLoginPage() {
         }
       );
 
-      alert("Login Successful");
+      const { token, user } = response.data ?? {};
 
-      // Save JWT token
-      localStorage.setItem(
-        "token",
-        response.data.token
-      );
+      if (!token || !user?.role) {
+        throw new Error("Invalid server response");
+      }
 
-      // Save user details
-      localStorage.setItem(
-        "user",
-        JSON.stringify(response.data.user)
-      );
-
-      router.push("/student-dashboard");
-
+      saveAuthSession(token, user);
+      router.replace(getDashboardPathForRole(user.role));
     } catch (error: any) {
-      console.log("LOGIN ERROR:", error);
-
-      alert(
-        error?.response?.data?.message ||
-        "Login Failed"
-      );
+      console.error("LOGIN ERROR:", error);
+      setError(error?.response?.data?.message || "Login Failed");
     } finally {
       setLoading(false);
     }
@@ -131,11 +122,13 @@ export default function StudentLoginPage() {
 
             <form
               className="mt-8 space-y-5"
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleLogin();
-              }}
+              onSubmit={handleLogin}
             >
+              {error && (
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                  {error}
+                </div>
+              )}
 
               {/* Email */}
               <div>
@@ -208,11 +201,16 @@ export default function StudentLoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 py-3 font-semibold text-white transition hover:scale-[1.02]"
+                className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 py-3 font-semibold text-white transition hover:scale-[1.02] disabled:opacity-60"
               >
-                {loading
-                  ? "Logging In..."
-                  : "Login"}
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Logging In...
+                  </span>
+                ) : (
+                  "Login"
+                )}
               </button>
 
             </form>

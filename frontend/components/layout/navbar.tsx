@@ -3,10 +3,11 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Phone, Mail } from 'lucide-react'
+import { Menu, X, Phone, Mail, GraduationCap, UserRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/layout/theme-toggle'
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -18,9 +19,11 @@ const navLinks = [
 
 export function Navbar() {
   const router = useRouter()
+  const pathname = usePathname()
 
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isLoginMenuOpen, setIsLoginMenuOpen] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,6 +37,7 @@ export function Navbar() {
 
   return (
     <>
+      {pathname === '/' && <ThemeToggle />}
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -110,21 +114,56 @@ export function Navbar() {
             </nav>
 
             <div className="hidden md:flex items-center gap-4">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Button
-                  onClick={() =>
-                    router.push('/student-login')
-                  }
-                  className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-6 rounded-xl shadow-lg shadow-blue-500/20 transition-all duration-300 hover:scale-105"
+              <div className="relative">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <span className="relative z-10">
-                    🎓 Student Login
-                  </span>
-                </Button>
-              </motion.div>
+                  <Button
+                    onClick={() => setIsLoginMenuOpen((open) => !open)}
+                    className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-6 rounded-xl shadow-lg shadow-blue-500/20 transition-all duration-300 hover:scale-105"
+                  >
+                    <span className="relative z-10">
+                      Login
+                    </span>
+                  </Button>
+                </motion.div>
+
+                <AnimatePresence>
+                  {isLoginMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                      transition={{ duration: 0.18 }}
+                      className="absolute right-0 top-14 w-64 rounded-2xl border border-border/60 bg-popover p-2 shadow-2xl"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsLoginMenuOpen(false)
+                          router.push('/student-login')
+                        }}
+                        className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-foreground transition hover:bg-secondary"
+                      >
+                        <GraduationCap className="h-4 w-4 text-primary" />
+                        Login as Student
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsLoginMenuOpen(false)
+                          router.push('/teacher-login')
+                        }}
+                        className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-foreground transition hover:bg-secondary"
+                      >
+                        <UserRound className="h-4 w-4 text-primary" />
+                        Login as Teacher
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
 
             <button
@@ -197,7 +236,7 @@ export function Navbar() {
                   transition={{
                     delay: navLinks.length * 0.1,
                   }}
-                  className="pt-2"
+                  className="pt-2 space-y-2"
                 >
                   <Button
                     onClick={() => {
@@ -206,7 +245,17 @@ export function Navbar() {
                     }}
                     className="w-full bg-primary hover:bg-primary/90"
                   >
-                    🎓 Student Login
+                    Login as Student
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false)
+                      router.push('/teacher-login')
+                    }}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Login as Teacher
                   </Button>
                 </motion.div>
 

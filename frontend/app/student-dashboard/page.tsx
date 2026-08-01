@@ -6,6 +6,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import {
+  clearAuthSession,
+  getDashboardPathForRole,
+  getStoredUser,
+} from "@/lib/auth";
+import {
   BookOpen,
   GraduationCap,
   Briefcase,
@@ -48,7 +53,15 @@ export default function StudentDashboard() {
         const savedUser = localStorage.getItem("user");
 
         if (!token) {
+          clearAuthSession();
           router.replace("/student-login");
+          return;
+        }
+
+        const storedUser = getStoredUser();
+
+        if (storedUser?.role && storedUser.role !== "student") {
+          router.replace(getDashboardPathForRole(storedUser.role));
           return;
         }
 
@@ -61,9 +74,16 @@ export default function StudentDashboard() {
           }
         );
 
-        if (response?.data?.user) {
-          setStudent(response.data.user);
-          localStorage.setItem("user", JSON.stringify(response.data.user));
+        const profileUser = response?.data?.user;
+
+        if (profileUser?.role && profileUser.role !== "student") {
+          router.replace(getDashboardPathForRole(profileUser.role));
+          return;
+        }
+
+        if (profileUser) {
+          setStudent(profileUser);
+          localStorage.setItem("user", JSON.stringify(profileUser));
         } else if (savedUser) {
           setStudent(JSON.parse(savedUser));
         } else {
@@ -71,13 +91,14 @@ export default function StudentDashboard() {
         }
       } catch (error: any) {
         console.error("Failed to load student profile", error);
+
         if (error?.response?.status === 401 || error?.response?.status === 403) {
-          setStudent(null);
-          setLoading(false);
+          clearAuthSession();
+          router.replace("/student-login");
           return;
         }
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+
+        clearAuthSession();
         router.replace("/student-login");
       } finally {
         setLoading(false);

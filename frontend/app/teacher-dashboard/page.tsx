@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -26,6 +28,32 @@ import {
 } from "lucide-react";
 
 export default function TeacherDashboard() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+
+    if (!token) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      router.replace("/student-login");
+      return;
+    }
+
+    if (!storedUser) {
+      router.replace("/student-login");
+      return;
+    }
+
+    const parsedUser = JSON.parse(storedUser);
+
+    if (parsedUser?.role !== "teacher") {
+      router.replace(parsedUser?.role === "student" ? "/student-dashboard" : parsedUser?.role === "admin" ? "/admin-dashboard" : "/student-login");
+      return;
+    }
+  }, [router]);
+
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard" },
     { icon: BookOpen, label: "My Classes" },
